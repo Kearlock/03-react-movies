@@ -17,7 +17,7 @@ export default function MovieGrid({ movies, onSelect }: Props) {
               src={
                 movie.poster_path
                   ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                  : "https://via.placeholder.com/500x750?text=No+Image"
+                  : `https://image.tmdb.org/t/p/w500${movie.backdrop_path}`
               }
               alt={movie.title}
               loading="lazy"

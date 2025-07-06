@@ -1,25 +1,52 @@
 import { useState } from "react";
-import "./App.module.css";
+import toast, { Toaster } from "react-hot-toast";
+import SearchBar from "../SearchBar/SearchBar.tsx";
+import Loader from "../Loader/Loader.tsx";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import MovieGrid from "../MovieGrid/MovieGrid";
+import MovieModal from "../MovieModal/MovieModal";
+import type { Movie } from "../../types/movie.ts";
+import { fetchMovies } from "../../services/movieService.ts";
 
-function App() {
-  const [count, setCount] = useState(0);
+export default function App() {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+
+  const handleSearch = async (query: string) => {
+    setMovies([]);
+    setError(false);
+    setIsLoading(true);
+
+    try {
+      const results = await fetchMovies(query);
+      if (results.length === 0) {
+        toast.error("No movies found for your request.");
+      }
+      setMovies(results);
+    } catch {
+      setError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <SearchBar onSubmit={handleSearch} />
+      {isLoading && <Loader />}
+      {error && <ErrorMessage />}
+      {!isLoading && !error && movies.length > 0 && (
+        <MovieGrid movies={movies} onSelect={setSelectedMovie} />
+      )}
+      {selectedMovie && (
+        <MovieModal
+          movie={selectedMovie}
+          onClose={() => setSelectedMovie(null)}
+        />
+      )}
+      <Toaster />
     </>
   );
 }
-
-export default App;
